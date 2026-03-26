@@ -179,6 +179,51 @@ func D7(baseSignIndex int, posInSign float64) VargaResult {
 	return VargaResult{"D7 Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
+// D7 HD: Saptamsa
+//tested
+func D7HD(baseSignIndex int, posInSign float64) VargaResult {
+//	const DIVSIZE int = 7 //this approach causes some issues
+
+	amsaSize := 30.0 / 7 
+	amsaIndex := int(posInSign / amsaSize)
+
+	//start := baseSignIndex
+	var mapped int
+	if baseSignIndex%2 != 0 { // even signs because baseSignIndex is 0 based
+		mapped = baseSignIndex + amsaIndex + 7
+	} else {
+		mapped = baseSignIndex + amsaIndex
+	}
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 7 
+	return VargaResult{"D7 HD Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+}
+
+
+// D8 HD: Saptamsa
+// tested with 3 cases
+func D8HD(baseSignIndex int, posInSign float64) VargaResult {
+
+	amsaSize := 30.0 / 8 
+	amsaIndex := int(posInSign / amsaSize)
+
+	//start := baseSignIndex
+	var mapped int
+
+	switch baseSignIndex { //0 based
+	case 0,3,6,9: //movable
+		mapped = 0 + amsaIndex //start from Aries
+	case 1,4,7,10: //fixed
+		mapped = 4 + amsaIndex //start from Leo
+	case 2,5,8,11: //dual
+		mapped = 8 + amsaIndex
+	}
+
+	mapped = mapped % 12
+	fmt.Printf("baseSignIndex: %d , mapped: %d \n",baseSignIndex, mapped)
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 8 
+	return VargaResult{"D8 HD Ashtamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+}
+
 // D9: Navamsa
 func D9(baseSignIndex int, posInSign float64) VargaResult {
 	amsaSize := 30.0 / 9  //3.20
@@ -265,6 +310,7 @@ func D9_Parasara(baseSignIndex int, posInSign float64) VargaResult {
 
 
 // D10: Dasamsa
+//tested 3 cases
 func D10(baseSignIndex int, posInSign float64) VargaResult {
 	amsaSize := 30.0 / 10
 	amsaIndex := int(posInSign / amsaSize)
@@ -393,6 +439,8 @@ func main() {
 		D5HD,
 		D6HD,
 		D7,
+		D7HD,
+		D8HD,
 		D9,
 		D9HD,
 		// D9_Parasara,
