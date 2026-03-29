@@ -176,11 +176,13 @@ func D7(baseSignIndex int, posInSign float64) VargaResult {
 	}
 	mapped := (start + amsaIndex) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 7
+
+	fmt.Printf(" D7 Saptamsa baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
 	return VargaResult{"D7 Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 // D7 HD: Saptamsa
-//tested
+//FIXME - logic validation needed for all cases. example - 210 degrees breaks  
 func D7HD(baseSignIndex int, posInSign float64) VargaResult {
 //	const DIVSIZE int = 7 //this approach causes some issues
 
@@ -190,11 +192,18 @@ func D7HD(baseSignIndex int, posInSign float64) VargaResult {
 	//start := baseSignIndex
 	var mapped int
 	if baseSignIndex%2 != 0 { // even signs because baseSignIndex is 0 based
-		mapped = baseSignIndex + amsaIndex + 7
+		mapped = baseSignIndex + amsaIndex + 6
 	} else {
 		mapped = baseSignIndex + amsaIndex
 	}
+	if mapped > 11 {
+		mapped = mapped - 11
+	} 
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 7 
+
+
+	fmt.Printf(" D7 HD Saptamsa baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
+
 	return VargaResult{"D7 HD Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
@@ -323,6 +332,35 @@ func D10(baseSignIndex int, posInSign float64) VargaResult {
 	return VargaResult{"D10 Dasamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
+// D11: Rudramsa / Ekadasama
+//count baseSignIndex from Aries, go in opposite direction from Aries for equal number.
+//this is starting point. count number of amsas from this.
+func D11HD(baseSignIndex int, posInSign float64) VargaResult {
+	amsaSize := 30.0 / 11
+
+	amsaIndex := int(posInSign / amsaSize)
+
+	//fmt.Printf("D11HD amsaSize: %s, AmsaIndex: %d  \n", toDMS(amsaSize), amsaIndex)
+	start :=  12 - baseSignIndex
+
+	var mapped int
+	mapped = (start + amsaIndex)
+	if (mapped > 11 ) {
+		mapped =  mapped - 12
+	}
+
+	//fmt.Printf("degInAmsa %f \n", posInSign -  (   ))
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 11
+
+	fmt.Printf(" D11HD Rudramsa/Ekadasama  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
+
+	return VargaResult{"D11 HD Rudramsa", mapped, signs[mapped], toDMS(degInAmsa)}
+
+//	return VargaResult{"D11 HD Rudramsa", 0, signs[0], toDMS(2.5)}
+
+}
+
+
 // D12: Dvadasamsa
 func D12(baseSignIndex int, posInSign float64) VargaResult {
 	amsaSize := 30.0 / 12
@@ -333,35 +371,117 @@ func D12(baseSignIndex int, posInSign float64) VargaResult {
 }
 
 
-// D16: Shodashamsa — odd signs start from Aries, even signs start from Libra
+// D16: Shodashamsa / Kalamsha — movable start from Aries, Fixed start from Leo, Dual start from Saggitarius 
 func D16(baseSignIndex int, posInSign float64) VargaResult {
 	amsaSize := 30.0 / 16
 	amsaIndex := int(posInSign / amsaSize)
 
-	start := 0 // Aries
-	if baseSignIndex%2 != 0 { // even sign
-		start = 6 // Libra
+	var mapped int
+
+	switch baseSignIndex { //0 based
+	case 0,3,6,9: //movable
+		mapped = 0 + amsaIndex //start from Aries
+	case 1,4,7,10: //fixed
+		mapped = 4 + amsaIndex //start from Leo
+	case 2,5,8,11: //dual
+		mapped = 8 + amsaIndex
 	}
 
-	mapped := (start + amsaIndex) % 12
+	mapped = mapped  % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 16
+	fmt.Printf(" D16 Shodamsa/Kalamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
 	return VargaResult{"D16 Shodashamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
-// D20: Vimshamsa — odd signs start from Leo, even signs start from Cancer
+// D20: Vimshamsa 
+//TODO - check why movable and dual start are exchanged
 func D20(baseSignIndex int, posInSign float64) VargaResult {
 	amsaSize := 30.0 / 20
 	amsaIndex := int(posInSign / amsaSize)
 
-	start := 4 // Leo
-	if baseSignIndex%2 != 0 { // even sign
-		start = 3 // Cancer
+	var mapped int
+
+	switch baseSignIndex { //0 based
+	case 0,3,6,9: //movable
+		mapped = 0 + amsaIndex //start from Aries
+	case 1,4,7,10: //fixed
+		mapped = 8 + amsaIndex //start from Saggi -weird
+	case 2,5,8,11: //start from Leo
+		mapped = 4 + amsaIndex
 	}
 
-	mapped := (start + amsaIndex) % 12
+	mapped = mapped % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 20
+	fmt.Printf("D20 Vimshamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
 	return VargaResult{"D20 Vimshamsa", mapped, signs[mapped], toDMS(degInAmsa)}
 }
+
+
+
+// D24: Chaturvimshamsha 
+func D24(baseSignIndex int, posInSign float64) VargaResult {
+	amsaSize := 30.0 / 24
+	amsaIndex := int(posInSign / amsaSize)
+
+	var start int
+	var mapped int
+	if baseSignIndex%2 != 0 { // even signs because baseSignIndex is 0 based
+		start = 3
+	} else {
+		start = 4
+	}
+
+	mapped = start + amsaIndex
+	mapped = mapped % 12 
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 24
+	fmt.Printf("D24 Chaturvimshamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
+	return VargaResult{"D24 Chaturvimshamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+}
+
+
+// D27: Nakshatramsa / Saptavimsamsa / Bhamsa 
+//TODO check exchange of Cancer and Capricorn start
+//FIXME Ge - 11 case works, Sc 19 fails on % change 11/12
+func D27HD(baseSignIndex int, posInSign float64) VargaResult {
+	amsaSize := 30.0 / 27
+	amsaIndex := int(posInSign / amsaSize)
+
+	var start int
+	var mapped int
+
+	switch baseSignIndex {
+		case 0,4,8: //fiery
+			start = 0
+		case 1,5,9: //earthy
+			start = 3 
+		case 2,6,10: //airy
+			start = 6
+		case 3,7,11: //watery
+			start = 9
+	}
+
+	mapped = start + amsaIndex
+	mapped = mapped % 12 
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 27
+	fmt.Printf("D27 HD Nakshatramsa  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
+	return VargaResult{"D27 HD Nakshatramsa", mapped, signs[mapped], toDMS(degInAmsa)}
+}
+
+
+// D30: Trimsamsa 
+func D30HD(baseSignIndex int, posInSign float64) VargaResult {
+	amsaSize := 30.0 / 6 
+
+	var start int
+	var mapped int
+
+	mapped = start + amsaIndex
+	mapped = mapped % 12 
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 27
+	fmt.Printf("D30 HD Trimsamsa  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
+	return VargaResult{"D30 Trimsamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+}
+
 
 func getRashiName(decimalDegree float64) string {
 
@@ -445,9 +565,12 @@ func main() {
 		D9HD,
 		// D9_Parasara,
 		D10,
+		D11HD,
 		D12,
 		D16,
 		D20,
+		D24,
+		D27HD,
 	}
 
 /*
