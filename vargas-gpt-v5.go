@@ -21,6 +21,7 @@ func (d DMS) String() string {
 
 type VargaResult struct {
 	Varga string `json:"Varga"`
+	VargaID int `json:VargaID`
 	SignIndex int `json:SignIndex`
 	Sign  string `json:"Sign"`
 	DMS   DMS    `json:"DMS"`
@@ -72,8 +73,38 @@ func toDMS(deg float64) DMS {
 
 // D1: Rasi
 func D1(baseSignIndex int, posInSign float64) VargaResult {
-	return VargaResult{"D1 Rasi", baseSignIndex, signs[baseSignIndex], toDMS(posInSign)}
+	return VargaResult{"D1 Rasi", 1, baseSignIndex, signs[baseSignIndex], toDMS(posInSign)}
 }
+
+
+//D2 Hora
+func D2HD(baseSignIndex int, posInSign float64) VargaResult {
+	amsaSize := 30.0/2
+	amsaIndex := int(posInSign / amsaSize)
+
+	var mapped int	
+	//since 0 based, this is actually an odd rasi
+	if (baseSignIndex%2) == 0 {
+		if amsaIndex == 1 {
+			mapped = 3 //Moon's Hora - Cancer		
+		} else {
+			mapped = 4 //Sun's Hora - Leo
+		}
+	} else {
+
+		if amsaIndex == 1 {
+			mapped = 4 //Sun's Hora - Cancer		
+		} else {
+			mapped = 3 //Moon's Hora - Leo
+		}
+	}
+
+	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 27
+	fmt.Printf("D2HD Hora baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
+	return VargaResult{"D2HD Hora", 2, mapped, signs[mapped], toDMS(degInAmsa)}
+
+}
+
 // D3: Drekkana
 //verified with some tests
 func D3(baseSignIndex int, posInSign float64) VargaResult {
@@ -84,7 +115,7 @@ func D3(baseSignIndex int, posInSign float64) VargaResult {
 	mapped := (baseSignIndex + offsets[amsaIndex]) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 3
 //	fmt.Println("baseSignIndex: ", baseSignIndex, " posInSign: ", posInSign,  " amsaIndex:", amsaIndex, " mapped: ", mapped, " degInAmsa: ", degInAmsa)
-	return VargaResult{"D3 Drekkana", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D3 Drekkana", 3,  mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 //D4 HD as per PVRN
@@ -95,7 +126,7 @@ func D4HD(baseSignIndex int, posInSign float64) VargaResult {
 	mapped := (baseSignIndex + offsets[amsaIndex]) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 3
 //	fmt.Println("baseSignIndex: ", baseSignIndex, " posInSign: ", posInSign,  " amsaIndex:", amsaIndex, " mapped: ", mapped, " degInAmsa: ", degInAmsa)
-	return VargaResult{"D4 HD Chaturthamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D4 HD Chaturthamsa", 4, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 //D5 as per PVRN
@@ -139,7 +170,7 @@ func D5HD(baseSignIndex int, posInSign float64) VargaResult {
 	
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 6
 //	fmt.Println("baseSignIndex: ", baseSignIndex, " posInSign: ", posInSign,  " amsaIndex:", amsaIndex, " mapped: ", mapped, " degInAmsa: ", degInAmsa)
-	return VargaResult{"D5 HD Panchamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D5 HD Panchamsa", 5, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -162,7 +193,7 @@ func D6HD(baseSignIndex int, posInSign float64) VargaResult {
 	
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 5
 //	fmt.Println("baseSignIndex: ", baseSignIndex, " posInSign: ", posInSign,  " amsaIndex:", amsaIndex, " mapped: ", mapped, " degInAmsa: ", degInAmsa)
-	return VargaResult{"D6 HD Shasthamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D6 HD Shasthamsa", 6, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -178,7 +209,7 @@ func D7(baseSignIndex int, posInSign float64) VargaResult {
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 7
 
 	fmt.Printf(" D7 Saptamsa baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
-	return VargaResult{"D7 Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D7 Saptamsa", 7, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 // D7 HD: Saptamsa
@@ -204,7 +235,7 @@ func D7HD(baseSignIndex int, posInSign float64) VargaResult {
 
 	fmt.Printf(" D7 HD Saptamsa baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
 
-	return VargaResult{"D7 HD Saptamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D7 HD Saptamsa", 7, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -230,7 +261,7 @@ func D8HD(baseSignIndex int, posInSign float64) VargaResult {
 	mapped = mapped % 12
 	fmt.Printf("baseSignIndex: %d , mapped: %d \n",baseSignIndex, mapped)
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 8 
-	return VargaResult{"D8 HD Ashtamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D8 HD Ashtamsa", 8, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 // D9: Navamsa
@@ -250,7 +281,7 @@ func D9(baseSignIndex int, posInSign float64) VargaResult {
 	}
 	mapped := (start + amsaIndex) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 9
-	return VargaResult{"D9 Navamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D9 Navamsa", 9, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -285,7 +316,7 @@ func D9HD(baseSignIndex int, posInD1 float64) VargaResult {
 
 	//fmt.Printf("amsaSize : %f amsaIndex : %d  degInAmsa :  %f \n", amsaSize, amsaIndex, degInAmsa)
 
-	return VargaResult{"D9 HD", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D9 HD", 9, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -329,7 +360,7 @@ func D10(baseSignIndex int, posInSign float64) VargaResult {
 	}
 	mapped := (start + amsaIndex) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 10
-	return VargaResult{"D10 Dasamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D10 Dasamsa", 10, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 // D11: Rudramsa / Ekadasama
@@ -354,7 +385,7 @@ func D11HD(baseSignIndex int, posInSign float64) VargaResult {
 
 	fmt.Printf(" D11HD Rudramsa/Ekadasama  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
 
-	return VargaResult{"D11 HD Rudramsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D11 HD Rudramsa", 11, mapped, signs[mapped], toDMS(degInAmsa)}
 
 //	return VargaResult{"D11 HD Rudramsa", 0, signs[0], toDMS(2.5)}
 
@@ -367,7 +398,7 @@ func D12(baseSignIndex int, posInSign float64) VargaResult {
 	amsaIndex := int(posInSign / amsaSize)
 	mapped := (baseSignIndex + amsaIndex) % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 12
-	return VargaResult{"D12 Dvadasamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D12 Dvadasamsa", 12, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -390,7 +421,7 @@ func D16(baseSignIndex int, posInSign float64) VargaResult {
 	mapped = mapped  % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 16
 	fmt.Printf(" D16 Shodamsa/Kalamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
-	return VargaResult{"D16 Shodashamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D16 Shodashamsa", 16, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 // D20: Vimshamsa 
@@ -413,7 +444,7 @@ func D20(baseSignIndex int, posInSign float64) VargaResult {
 	mapped = mapped % 12
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 20
 	fmt.Printf("D20 Vimshamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, mapped, degInAmsa)
-	return VargaResult{"D20 Vimshamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D20 Vimshamsa", 20, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -435,7 +466,7 @@ func D24(baseSignIndex int, posInSign float64) VargaResult {
 	mapped = mapped % 12 
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 24
 	fmt.Printf("D24 Chaturvimshamsha  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
-	return VargaResult{"D24 Chaturvimshamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D24 Chaturvimshamsa", 24, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -464,22 +495,77 @@ func D27HD(baseSignIndex int, posInSign float64) VargaResult {
 	mapped = mapped % 12 
 	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 27
 	fmt.Printf("D27 HD Nakshatramsa  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
-	return VargaResult{"D27 HD Nakshatramsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D27 HD Nakshatramsa", 27, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
 // D30: Trimsamsa 
+//TODO to be tested
+//TODO check why there are uneven divisions of amsas of 5,6,7 degrees
 func D30HD(baseSignIndex int, posInSign float64) VargaResult {
-	amsaSize := 30.0 / 6 
+	var amsaSize int 
+	var amsaIndex int
 
-	var start int
+	//var start int
 	var mapped int
+	var doneDegrees float64 
+	var posInAmsa float64
+	var degInAmsa float64
 
-	mapped = start + amsaIndex
-	mapped = mapped % 12 
-	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * 27
+	if baseSignIndex%2 == 0 { //odd sign because 0 based
+		if posInSign <= 5 {
+			mapped = 0 //Aries
+			amsaSize = 5
+			doneDegrees = 0
+		} else if posInSign > 5 && posInSign <= 10 {
+			mapped = 10 //Aquarius
+			amsaSize = 5
+			doneDegrees = 5
+		} else if posInSign > 10 && posInSign <= 18 {
+			mapped = 8 // Sagittarius
+			amsaSize = 8
+			doneDegrees = 10
+		} else if posInSign > 18 && posInSign <= 25 {
+			mapped = 2 // Gemini
+			amsaSize = 7
+			doneDegrees = 18
+		} else if posInSign > 25 && posInSign <= 30 {
+			mapped = 6 // Libra
+			amsaSize = 5
+			doneDegrees = 25
+		}	
+	} else { // even
+		if posInSign <= 5 {
+			mapped = 1 // Taurus
+			amsaSize = 5
+			doneDegrees = 0
+		} else if posInSign > 5 && posInSign <= 12 {
+			mapped = 5 // Virgo
+			amsaSize = 7
+			doneDegrees = 5
+		} else if posInSign > 12 && posInSign <= 20 {
+			mapped = 11 // Pisces
+			amsaSize = 8
+			doneDegrees = 12
+		} else if posInSign > 20 && posInSign <= 25 {
+			mapped = 9 // Capricorn
+			amsaSize = 5
+			doneDegrees = 20
+		} else if posInSign > 25 && posInSign <= 30 {
+			mapped = 7 // Scorpio
+			amsaSize = 5
+			doneDegrees = 25
+		}
+	}
+
+	posInAmsa = posInSign - doneDegrees
+	degInAmsa = posInAmsa * float64(amsaSize)
+	//amsaIndex := int(posInSign / amsaSize)
+
+//	degInAmsa := ( (30 - doneDegrees)      posInSign - float64(amsaIndex)*amsaSize) * amsaSize 
+//	degInAmsa := (posInSign - float64(amsaIndex)*amsaSize) * amsaSize 
 	fmt.Printf("D30 HD Trimsamsa  baseSignIndex: %d , posInSign: %f amsaSize: %f amsaIndex: %d mapped: %d degInAmsa %f \n",baseSignIndex, posInSign, amsaSize, amsaIndex, mapped, degInAmsa)
-	return VargaResult{"D30 Trimsamsa", mapped, signs[mapped], toDMS(degInAmsa)}
+	return VargaResult{"D30 HD Trimsamsa", 30, mapped, signs[mapped], toDMS(degInAmsa)}
 }
 
 
@@ -571,6 +657,7 @@ func main() {
 		D20,
 		D24,
 		D27HD,
+		D30HD,
 	}
 
 /*
